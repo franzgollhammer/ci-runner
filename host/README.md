@@ -151,6 +151,21 @@ Do not manually add routing labels during maintenance. Repair expired PATs with
 the token helper; retry with `sudo ci-host start` after repair. That explicit
 command skips the automatic ten-minute backoff.
 
+If the job daemon stops answering, the controller's guard check gives up after
+120 seconds, so `ci-host status`, `recover` and `refresh` all exit without
+changing anything. systemd restarts a daemon that crashed, but not one that is
+alive and hung, so this case needs an operator:
+
+```sh
+sudo timeout 30 docker --host unix:///run/user/1001/docker.sock info
+sudo systemctl restart user@1001.service
+sudo ci-host start
+```
+
+The restart stops every job container on that daemon. The new daemon has a new
+socket, so `ci-host start` drains and replaces the runner container, which still
+holds a mount of the old one. The recovery timer does the same once it is enabled.
+
 ## Rollback
 
 Record the preparation backup path and the old runner's private configuration
