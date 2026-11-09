@@ -7,6 +7,8 @@ export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 unset DOCKER_HOST DOCKER_CONTEXT DOCKER_CONFIG
 
 die() { printf 'ci-runner install: %s\n' "$*" >&2; exit 1; }
+# set -e alone exits without a word; name the command that failed.
+trap 'die "failed at line $LINENO: $BASH_COMMAND"' ERR
 mode=${1:---check}
 [[ $# -le 1 && ( $mode == --check || $mode == --prepare ) ]] || die 'use --check or --prepare'
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
@@ -61,7 +63,8 @@ for path in "$source_dir"/systemd/ci-runner.* "$source_dir"/systemd/ci-runner-*.
   if [[ -e $destination ]]; then cp -a --parents "$destination" "$backup/"; fi
 done
 docker --host unix:///var/run/docker.sock ps -a --no-trunc >"$backup/containers.txt"
-systemctl list-unit-files 'ci-runner*' >"$backup/units.txt"
+# Exits 1 when nothing matches, the normal case on a first install.
+systemctl list-unit-files 'ci-runner*' >"$backup/units.txt" || true
 printf '%s\n' "$backup" >"$backup/backup-path"
 
 if ! getent passwd ci-ucsl >/dev/null; then
