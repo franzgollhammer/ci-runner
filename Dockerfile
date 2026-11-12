@@ -1,7 +1,7 @@
 # Self-registering GitHub Actions runner on top of the official runner image
 # (Ubuntu 24.04, runner in /home/runner, user "runner" with passwordless sudo,
 # Docker CLI and buildx). Dependabot keeps tag and digest current.
-FROM ghcr.io/actions/actions-runner:2.338.2@sha256:759a1d94a15b05941aba5196974ff43fe15b4cbba29b694b35cbc32a1166b232
+FROM ghcr.io/actions/actions-runner:2.338.2@sha256:6d0b2d80d80f143f77dcb676e50920100bbb547e39e883454d57f45ab8c31300
 
 # apt packages on top of the baseline below, space-separated, e.g. "redis-server".
 ARG EXTRA_APT_PACKAGES=""
